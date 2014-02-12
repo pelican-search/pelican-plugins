@@ -1,0 +1,10 @@
+Improved search
+===============
+
+
+
+Installation
+------------
+
+Configuration
+-------------
