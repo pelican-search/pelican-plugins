@@ -23,58 +23,66 @@ from pelican import signals
 
 class Pelican_Search_JSON_Generator(object):
 
-    """
+	"""
 
-    """
-    def __init__(self, context, settings, path, theme, output_path, *args):
-        self.output_path = output_path
-        self.context = context
-        self.siteurl = settings.get('SITEURL')
-        self.json_nodes = []
+	"""
+	def __init__(self, context, settings, path, theme, output_path, *args):
+		self.output_path = output_path
+		self.context = context
+		self.siteurl = settings.get('SITEURL')
+		self.json_nodes = []
 
-    def create_json_node(self, page):
-        if getattr(page, 'status', 'published') != 'published':
-            return
 
-        node = {}
+	def create_json_node(self, page):
+		if getattr(page, 'status', 'published') != 'published':
+			return
 
-        soup_title = BeautifulSoup(page.title.replace('&nbsp;', ' '))
-        node['title'] = soup_title.get_text(separator=' ', strip=True)
+		node = {}
 
-        soup_text = BeautifulSoup(page.content)
-        page_text = soup_text.get_text(separator=' ', strip=True)
-        node['content'] = ' '.join(page_text.split())
+		soup_title = BeautifulSoup(page.title.replace('&nbsp;', ' '))
+		node['title'] = soup_title.get_text(separator=' ', strip=True)
 
-        if hasattr(page, 'category'):
-            node['category'] = page.category.name
-        else:
-            node['category'] = ''
+		soup_text = BeautifulSoup(page.content)
+		page_text = soup_text.get_text(separator=' ', strip=True)
+		node['content'] = ' '.join(page_text.split())
+		
+		if hasattr(page, 'category'):
+			node['category'] = page.category.name
+		else:
+			node['category'] = ''
 
-        node['tags'] = [tag.name for tag in page.tags]
+		if hasattr(page, 'tags'):
+			node['tags'] = [tag.name for tag in page.tags]
 
-        node['url'] = self.siteurl + '/' + page.url
+		node['url'] = self.siteurl + '/' + page.url
 
-        self.json_nodes.append(node)
+		self.json_nodes.append(node)
 
-    def generate_output(self, writer):
-        path = os.path.join(self.output_path, 'pelican_search_content.js')
 
-        pagesAndArticles = self.context['pages'] + self.context['articles']
+	def generate_output(self, writer):
+		path = os.path.join(self.output_path, 'pelican_search_content.js')
 
-        for article in self.context['articles']:
-            pagesAndArticles += article.translations
+		pagesAndArticles = self.context['pages'] + self.context['articles']
 
-        for x in pagesAndArticles:
-            self.create_json_node(x)
+		for article in self.context['articles']:
+			pagesAndArticles += article.translations
 
-        with open(path, 'w', encoding='utf-8') as fd:
-            fd.write('var data = ')
-            json.dump(self.json_nodes, fd)
+		for x in pagesAndArticles:
+			self.create_json_node(x)
+
+		with open(path, 'w', encoding='utf-8') as fd:
+			#Pretty
+			fd.write('var pelican_search_data = ')
+			json.dump(self.json_nodes, fd, indent=4, separators=(',', ': '), sort_keys=True)
+			
+			#Mini
+			#fd.write('var pelican_search_data=')
+			#json.dump(self.json_nodes, fd)
 
 
 def get_generators(generators):
-    return Pelican_Search_JSON_Generator
+	return Pelican_Search_JSON_Generator
 
 
 def register():
-    signals.get_generators.connect(get_generators)
+	signals.get_generators.connect(get_generators)

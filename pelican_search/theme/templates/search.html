@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Search • {{ super() }}
+{% endblock title %}
+
+{% block script %}
+	{{ super() }}
+	
+	<script src="http://code.jquery.com/jquery.min.js"></script>
+	<script type="text/javascript" src="{{ SITEURL }}/pelican_search_content.js"></script>
+	<script type="text/javascript" src="{{ SITEURL }}/theme/js/pelican_search.js"></script>
+	<script>
+	$(document).ready(
+		function() {
+			pelican_search_config['summeryLength'] = 300
+			
+			var query = getURLP('q')
+			$("#searchHeader").text("Search result for '" + query + "'");
+			pelican_search( query );
+		}
+	);
+	</script>
+{% endblock script %}
+
+{% block content %}
+	<form role="search" action="{{ SITEURL }}/search.html" onsubmit="return (this.elements['q'].value).length > 0;">
+		<input type="search" placeholder="Search ..." name="q">
+		<button type="submit">Search</button>
+	</form>
+
+	<article>
+		<div class="page-header">
+			<h1 id="searchHeader"></h1>
+		</div>
+		<div id="pelican_search_resultNumber"></div>
+		<div id="pelican_search_content"></div>
+	</article>
+{% endblock content %}
